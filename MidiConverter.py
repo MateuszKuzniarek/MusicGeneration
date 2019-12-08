@@ -22,7 +22,7 @@ class MidiConverter:
         for track in mid.tracks:
             for msg in track:
                 if not msg.is_meta and msg.type == 'note_on':
-                    notes.append([msg.note, msg.time])
+                    notes.append(msg.note)
 
         return notes
 
@@ -33,6 +33,6 @@ class MidiConverter:
         mid.tracks.append(track)
 
         for note in notes:
-            track.append(Message('note_on', note=note[0], velocity=64, time=note[1]))
+            track.append(Message('note_on', note=note, velocity=64, time=500))
 
         mid.save(MidiConverter.output_path + name)

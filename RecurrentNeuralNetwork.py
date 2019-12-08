@@ -1,57 +1,66 @@
-from queue import Queue
-
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as pyplot
+import pickle
 from sklearn.model_selection import train_test_split
+from tensorflow_core.python.keras.layers.core import Dense, Activation, Dropout
+from tensorflow_core.python.keras.utils import np_utils
+
+from Normalizer import Normalizer
 
 
 class RecurrentNeuralNetwork:
 
     model = tf.keras.models.Sequential()
+    normalizer = Normalizer()
+    sequence_length = 20
 
     def __init__(self):
-        self.model.add(tf.keras.layers.LSTM(2, activation='relu', batch_input_shape=(None, 3, 2), return_sequences=False))
-
-        self.model.compile(loss='mse', optimazer='adam', metrics=['accuracy'])
+        self.model.add(tf.keras.layers.LSTM(40, activation='relu', batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
+        self.model.add(Dropout(0.3))
+        self.model.add(tf.keras.layers.LSTM(40))
+        self.model.add(Dropout(0.3))
+        self.model.add(Dense(256))
+        self.model.add(Dropout(0.3))
+        self.model.add(Dense(94))
+        self.model.add(Activation('softmax'))
+        self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     def train(self, data_set):
-        x = [[data_set[i + j] for i in range(3)] for j in range(0, len(data_set) - 3)]
-        y = [data_set[i + 3] for i in range(0, len(data_set) - 3)]
+        x = [[[data_set[i + j]/127] for i in range(self.sequence_length)] for j in range(0, len(data_set) - self.sequence_length)]
+        y = [data_set[i + self.sequence_length] for i in range(0, len(data_set) - self.sequence_length)]
 
-        print(x)
-
-        x = tf.keras.utils.normalize(x)
-        y = tf.keras.utils.normalize(y)
-
-        x = np.array(x, np.dtype(float))
-        y = np.array(y, np.dtype(float))
-
+        x = np.reshape(x, (len(x), self.sequence_length, 1))
+        y = np_utils.to_categorical(y)
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=4)
 
-        print(x.shape)
         history = self.model.fit(x_train, y_train, epochs=100)
         pyplot.plot(history.history['loss'])
         pyplot.show()
 
     def answer(self, messages):
-        messages = tf.keras.utils.normalize(messages)
-        messages = np.array(messages, np.dtype(float))
-        return self.model.predict([messages])
+        normalized_messages = []
+        for message in messages:
+            normalized_messages.append([message/127])
+        normalized_messages = np.array([normalized_messages], np.dtype(float))
+        result = self.model.predict(normalized_messages)
+        result = np.argmax(result)
+        return result
 
     def save_model(self):
+        pickle.dump(self.normalizer, open('models/model.bin', mode='wb'))
         self.model.save('models/model.h5')
 
     def load_model(self):
+        self.normalizer = pickle.load(open('models/model.bin', mode='rb'))
         self.model = tf.keras.models.load_model('models/model.h5')
 
     def generate(self, length):
-        notes = [[56.0, 0.0], [64.0, 1440.0], [64.0, 1440.0]]
+        notes = [56, 59, 64, 64, 59, 56, 52, 52, 56, 56, 59, 59, 64, 64, 64, 64, 68, 68, 71, 71]
         for i in range(0, length):
-            train_messages = [[notes[-3], notes[-2], notes[-1]]]
+            train_messages = notes[-self.sequence_length:]
             print(train_messages)
-            notes.append(self.answer(train_messages)[0].tolist())
+            notes.append(self.answer(train_messages))
 
-        result = [[int(note[0]), int[note[1]]] for note in notes]
-        return result
+        return notes
 
