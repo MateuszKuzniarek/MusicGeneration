@@ -1,7 +1,8 @@
+from MainWindow import MainWindow
 from MidiConverter import MidiConverter
 from RecurrentNeuralNetwork import RecurrentNeuralNetwork
 
-converted_midi = MidiConverter.convert_midi_file('test_files/test2.mid')
+#converted_midi = MidiConverter.convert_midi_file('test_files/test2.mid')
 
 #for i in converted_midi:
 #    print(i)
@@ -13,15 +14,18 @@ converted_midi = MidiConverter.convert_midi_file('test_files/test2.mid')
 #print(y)
 #print(converted_midi)
 
-x = RecurrentNeuralNetwork()
+#x = RecurrentNeuralNetwork()
 #x.train(converted_midi)
 #x.save_model()
 
-x.load_model()
+#x.load_model()
 #notes = [[56], [64], [64]]
 #a = x.answer(notes)
 #print(a)
-generated_notes = x.generate(300)
-MidiConverter.write_midi_file('out_test', generated_notes)
+#generated_notes = x.generate(300)
+#MidiConverter.write_midi_file('out_test', generated_notes)
 
 #MidiConverter.display_midi_file('output_files/out_test.midi')
+
+window = MainWindow()
+window.display_window()

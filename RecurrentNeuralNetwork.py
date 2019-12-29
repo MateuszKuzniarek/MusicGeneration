@@ -47,13 +47,13 @@ class RecurrentNeuralNetwork:
         result = np.argmax(result)
         return result
 
-    def save_model(self):
-        pickle.dump(self.normalizer, open('models/model.bin', mode='wb'))
-        self.model.save('models/model.h5')
+    def save_model(self, path):
+        #pickle.dump(self.normalizer, open('models/model.bin', mode='wb'))
+        self.model.save(path)
 
-    def load_model(self):
-        self.normalizer = pickle.load(open('models/model.bin', mode='rb'))
-        self.model = tf.keras.models.load_model('models/model.h5')
+    def load_model(self, path):
+        #self.normalizer = pickle.load(open('models/model.bin', mode='rb'))
+        self.model = tf.keras.models.load_model(path)
 
     def generate(self, length):
         notes = [56, 59, 64, 64, 59, 56, 52, 52, 56, 56, 59, 59, 64, 64, 64, 64, 68, 68, 71, 71]
