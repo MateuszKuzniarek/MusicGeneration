@@ -1,3 +1,4 @@
+from GeneratorFacade import GeneratorFacade
 from MainWindow import MainWindow
 from MidiConverter import MidiConverter
 from RecurrentNeuralNetwork import RecurrentNeuralNetwork
@@ -26,6 +27,7 @@ from RecurrentNeuralNetwork import RecurrentNeuralNetwork
 #MidiConverter.write_midi_file('out_test', generated_notes)
 
 #MidiConverter.display_midi_file('output_files/out_test.midi')
+generator_facade = GeneratorFacade()
 
-window = MainWindow()
+window = MainWindow(generator_facade)
 window.display_window()

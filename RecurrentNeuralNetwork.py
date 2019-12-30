@@ -11,11 +11,12 @@ from Normalizer import Normalizer
 
 class RecurrentNeuralNetwork:
 
-    model = tf.keras.models.Sequential()
+    model_file_format = '.h5'
     normalizer = Normalizer()
     sequence_length = 20
 
     def __init__(self):
+        self.model = tf.keras.models.Sequential()
         self.model.add(tf.keras.layers.LSTM(40, activation='relu', batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
         self.model.add(Dropout(0.3))
         self.model.add(tf.keras.layers.LSTM(40))
@@ -59,8 +60,8 @@ class RecurrentNeuralNetwork:
         notes = [56, 59, 64, 64, 59, 56, 52, 52, 56, 56, 59, 59, 64, 64, 64, 64, 68, 68, 71, 71]
         for i in range(0, length):
             train_messages = notes[-self.sequence_length:]
-            print(train_messages)
+            #print(train_messages)
             notes.append(self.answer(train_messages))
-
+        notes = notes[self.sequence_length:]
         return notes
 

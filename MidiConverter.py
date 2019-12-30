@@ -4,11 +4,14 @@ from mido import MidiTrack, MidiFile, Message
 
 class MidiConverter:
 
-    output_path = "output_files/"
+    ticks_per_beat = 480
+    beats_per_minute = 120
+    delta_time_in_ticks = ticks_per_beat
 
     @staticmethod
     def display_midi_file(path):
         mid = MidiFile(path)
+        print(mid.ticks_per_beat)
         for track in mid.tracks:
             print(track)
             for msg in track:
@@ -27,12 +30,12 @@ class MidiConverter:
         return notes
 
     @staticmethod
-    def write_midi_file(name, notes):
+    def write_midi_file(path, notes):
         mid = MidiFile()
         track = MidiTrack()
         mid.tracks.append(track)
 
         for note in notes:
-            track.append(Message('note_on', note=note, velocity=64, time=500))
+            track.append(Message('note_on', note=note, velocity=64, time=MidiConverter.delta_time_in_ticks))
 
-        mid.save(MidiConverter.output_path + name)
+        mid.save(path)
