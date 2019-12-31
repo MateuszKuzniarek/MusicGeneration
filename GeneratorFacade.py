@@ -52,7 +52,8 @@ class GeneratorFacade:
         MidiConverter.write_midi_file(file_path, self.melody)
 
     def play_melody(self):
-        self.music_player.play()
+        file_object = MidiConverter.get_midi_file_object(self.melody)
+        self.music_player.play(file_object)
         print('play melody')
 
     def stop_melody(self):
