@@ -12,6 +12,8 @@ sequential = "*"
 matplotlib = "*"
 sklearn = "*"
 duration = "*"
+pygame = "*"
+pil = "*"
 
 [requires]
 python_version = "3.6.1"

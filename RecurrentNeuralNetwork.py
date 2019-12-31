@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as pyplot
-import pickle
 from sklearn.model_selection import train_test_split
 from tensorflow_core.python.keras.layers.core import Dense, Activation, Dropout
 from tensorflow_core.python.keras.utils import np_utils
