@@ -9,7 +9,7 @@ from tkinter import ttk
 class MainWindow:
     WIDTH = 500
     HEIGHT = 500
-    BACKGROUND_COLOR = '#c3d6c3'
+    BACKGROUND_COLOR = '#e0f0da'
     BUTTON_COLOR = '#4CAF50'
     HOVER_COLOR = '#3e8e41'
     ACTIVE_COLOR = '#7db37f'

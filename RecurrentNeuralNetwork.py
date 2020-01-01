@@ -1,3 +1,9 @@
+import pickle
+import tempfile
+from io import BytesIO
+from random import randint
+
+import h5py
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as pyplot
@@ -10,11 +16,12 @@ from Normalizer import Normalizer
 
 class RecurrentNeuralNetwork:
 
-    model_file_format = '.h5'
-    normalizer = Normalizer()
+    model_file_format = '.bin'
+    #normalizer = Normalizer()
     sequence_length = 20
 
     def __init__(self):
+        self.data_set = None
         self.model = tf.keras.models.Sequential()
         self.model.add(tf.keras.layers.LSTM(40, activation='relu', batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
         self.model.add(Dropout(0.3))
@@ -27,6 +34,8 @@ class RecurrentNeuralNetwork:
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     def train(self, data_set):
+        self.data_set = data_set
+
         x = [[[data_set[i + j]/127] for i in range(self.sequence_length)] for j in range(0, len(data_set) - self.sequence_length)]
         y = [data_set[i + self.sequence_length] for i in range(0, len(data_set) - self.sequence_length)]
 
@@ -48,15 +57,26 @@ class RecurrentNeuralNetwork:
         return result
 
     def save_model(self, path):
-        #pickle.dump(self.normalizer, open('models/model.bin', mode='wb'))
-        self.model.save(path)
+        with h5py.File('does not matter', driver='core',
+                       backing_store=False, mode='w') as h5file:
+            tf.keras.models.save_model(self.model, h5file)
+            h5file.flush()
+            binary_data = h5file.id.get_file_image()
+            object_for_save = {"binary_data": binary_data, "data_set": self.data_set}
+            pickle.dump(object_for_save, open(path, mode='wb'))
 
     def load_model(self, path):
-        #self.normalizer = pickle.load(open('models/model.bin', mode='rb'))
-        self.model = tf.keras.models.load_model(path)
+        loaded_object = pickle.load(open(path, mode='rb'))
+        model_file_object = BytesIO(loaded_object['binary_data'])
+        with h5py.File(model_file_object, mode='r') as h5file:
+            self.model = tf.keras.models.load_model(h5file)
+        self.data_set = loaded_object['data_set']
 
     def generate(self, length):
-        notes = [56, 59, 64, 64, 59, 56, 52, 52, 56, 56, 59, 59, 64, 64, 64, 64, 68, 68, 71, 71]
+        original_fragment_start = randint(0, len(self.data_set) - self.sequence_length)
+        notes = self.data_set[original_fragment_start:original_fragment_start+self.sequence_length]
+        #notes = [56, 59, 64, 64, 59, 56, 52, 52, 56, 56, 59, 59, 64, 64, 64, 64, 68, 68, 71, 71]
+
         for i in range(0, length):
             train_messages = notes[-self.sequence_length:]
             #print(train_messages)
