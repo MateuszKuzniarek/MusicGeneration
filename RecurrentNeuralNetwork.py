@@ -9,6 +9,7 @@ import tensorflow as tf
 import matplotlib.pyplot as pyplot
 from sklearn.model_selection import train_test_split
 from tensorflow_core.python.keras.layers.core import Dense, Activation, Dropout
+from tensorflow_core.python.keras.layers.cudnn_recurrent import CuDNNLSTM
 from tensorflow_core.python.keras.utils import np_utils
 
 from Normalizer import Normalizer
@@ -23,27 +24,33 @@ class RecurrentNeuralNetwork:
     def __init__(self):
         self.data_set = None
         self.model = tf.keras.models.Sequential()
-        self.model.add(tf.keras.layers.LSTM(40, activation='relu', batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
+        self.model.add(CuDNNLSTM(512, batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
         self.model.add(Dropout(0.3))
-        self.model.add(tf.keras.layers.LSTM(40))
+        self.model.add(CuDNNLSTM(512))
         self.model.add(Dropout(0.3))
         self.model.add(Dense(256))
         self.model.add(Dropout(0.3))
-        self.model.add(Dense(94))
+        self.model.add(Dense(90))
         self.model.add(Activation('softmax'))
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
     def train(self, data_set):
         self.data_set = data_set
-
-        x = [[[data_set[i + j]/127] for i in range(self.sequence_length)] for j in range(0, len(data_set) - self.sequence_length)]
-        y = [data_set[i + self.sequence_length] for i in range(0, len(data_set) - self.sequence_length)]
+        x = []
+        y = []
+        for track in data_set:
+            for j in range(0, len(track) - self.sequence_length):
+                input_vector = []
+                for i in range(self.sequence_length):
+                    input_vector.append(track[i + j]/127)
+                x.append(input_vector)
+                y.append(track[j + self.sequence_length])
 
         x = np.reshape(x, (len(x), self.sequence_length, 1))
         y = np_utils.to_categorical(y)
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=4)
 
-        history = self.model.fit(x_train, y_train, epochs=100)
+        history = self.model.fit(x_train, y_train, epochs=200, batch_size=64)
         pyplot.plot(history.history['loss'])
         pyplot.show()
 
@@ -73,14 +80,13 @@ class RecurrentNeuralNetwork:
         self.data_set = loaded_object['data_set']
 
     def generate(self, length):
-        original_fragment_start = randint(0, len(self.data_set) - self.sequence_length)
-        notes = self.data_set[original_fragment_start:original_fragment_start+self.sequence_length]
-        #notes = [56, 59, 64, 64, 59, 56, 52, 52, 56, 56, 59, 59, 64, 64, 64, 64, 68, 68, 71, 71]
-
+        random_track = self.data_set[randint(0, len(self.data_set) - 1)]
+        original_fragment_start = randint(0, len(random_track) - self.sequence_length - 1)
+        notes = random_track[original_fragment_start:original_fragment_start+self.sequence_length]
         for i in range(0, length):
             train_messages = notes[-self.sequence_length:]
-            #print(train_messages)
             notes.append(self.answer(train_messages))
         notes = notes[self.sequence_length:]
+        print(notes)
         return notes
 
