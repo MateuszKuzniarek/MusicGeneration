@@ -3,9 +3,9 @@ import tkinter as tk
 
 class GUIUtils:
     BACKGROUND_COLOR = '#e0f0da'
-    BUTTON_COLOR = '#4CAF50'
-    HOVER_COLOR = '#3e8e41'
-    ACTIVE_COLOR = '#7db37f'
+    BUTTON_COLOR = '#c46869'
+    HOVER_COLOR = '#bd8081'
+    ACTIVE_COLOR = '#a14f50'
 
     @staticmethod
     def on_enter(e):
@@ -23,3 +23,14 @@ class GUIUtils:
         button.bind("<Enter>", GUIUtils.on_enter)
         button.bind("<Leave>", GUIUtils.on_leave)
         return button
+
+    @staticmethod
+    def get_background_image():
+        photoImage = tk.PhotoImage(file='./img/background2.png')
+        return photoImage
+
+    @staticmethod
+    def set_label(canvas, relx, rely, stringvar, change_callback, total_width=500, total_height=500):
+        label = canvas.create_text(relx*total_width, rely*total_height, text=stringvar.get(), anchor='w')
+        stringvar.trace_variable('w', change_callback)
+        return label
