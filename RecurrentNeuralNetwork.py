@@ -39,7 +39,7 @@ class RecurrentNeuralNetwork:
         self.model.add(Activation('softmax'))
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-    def train(self, number_of_epochs=100, test_size=0.2):
+    def train(self, number_of_epochs=100, test_size=0.2, callbacks=[]):
         x = []
         y = []
         for track in self.data_set:
@@ -56,7 +56,7 @@ class RecurrentNeuralNetwork:
         y = np_utils.to_categorical(y)
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=4)
 
-        history = self.model.fit(x_train, y_train, epochs=number_of_epochs, batch_size=64)
+        history = self.model.fit(x_train, y_train, epochs=number_of_epochs, batch_size=64, callbacks=callbacks)
         pyplot.plot(history.history['loss'])
         pyplot.show()
 

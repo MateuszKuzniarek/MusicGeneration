@@ -74,10 +74,10 @@ class GeneratorFacade:
         return False
 
     def train(self, sequence_length, lstm_layer_size, dense_layer_size,
-              dropout_rate, number_of_epochs, test_sample_ratio):
+              dropout_rate, number_of_epochs, test_sample_ratio, callbacks):
         self.neural_network = RecurrentNeuralNetwork(self.data_set, sequence_length, lstm_layer_size,
                                                      dense_layer_size, dropout_rate)
-        self.neural_network.train(number_of_epochs, test_sample_ratio)
+        self.neural_network.train(number_of_epochs, test_sample_ratio, callbacks)
 
 
 

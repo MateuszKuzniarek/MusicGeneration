@@ -15,6 +15,7 @@ class MainWindow:
 
     def __init__(self, generator_facade):
         self.root = tk.Tk()
+        self.root.resizable(False, False)
         self.model_label_text = StringVar()
         self.duration_minutes = IntVar()
         self.duration_seconds = IntVar()
@@ -22,7 +23,7 @@ class MainWindow:
         self.should_timer_stop = False
         self.generator_facade = generator_facade
         self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, highlightthickness=0,
-                           bg=GUIUtils.BACKGROUND_COLOR)
+                                bg=GUIUtils.BACKGROUND_COLOR)
         self.model_buttons_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
         self.create_model_button = GUIUtils.init_button(self.model_buttons_frame, 'create model', self.create_model_button_callback)
         self.load_model_button = GUIUtils.init_button(self.model_buttons_frame, 'load model', self.load_model_button_callback)
@@ -65,7 +66,7 @@ class MainWindow:
         self.model_buttons_frame.grid_rowconfigure(0, weight=1)
 
     def init_model_label(self):
-        self.model_label_text.set('Current model: ')
+        self.set_model_label_text('')
         model_label_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
         model_label_frame.place(relwidth=1, relheight=0.1)
 
@@ -107,6 +108,9 @@ class MainWindow:
         self.melody_saving_frame.place(rely=0.8, relwidth=1, relheight=0.1)
         self.save_melody_button.pack(side='top', expand=True,  fill='y')
 
+    def set_model_label_text(self, model_name):
+        self.model_label_text.set('Current model: ' + model_name)
+
     def generate_button_callback(self):
         total_melody_time = self.duration_minutes.get() * 60 + self.duration_seconds.get()
         self.generator_facade.generate_melody(total_melody_time)
@@ -129,12 +133,11 @@ class MainWindow:
     def create_model_button_callback(self):
         window = ModelCreationWindow(self.generator_facade, self)
         window.display_window()
-        window.root.grab_set()
 
     def load_model_button_callback(self):
         file_path = askopenfilename(defaultextension=self.generator_facade.get_model_file_format())
         if self.generator_facade.load_model(file_path):
-            self.model_label_text.set('Current model: ' + os.path.basename(file_path))
+            self.set_model_label_text(os.path.basename(file_path))
         self.refresh_buttons_after_updating_model()
 
     def save_model_button_callback(self):
