@@ -23,6 +23,7 @@ class MidiConverter:
     def convert_midi_file(path):
         notes = []
 
+        #todo: multiple tracks problem
         mid = mido.MidiFile(path)
         for track in mid.tracks:
             for msg in track:

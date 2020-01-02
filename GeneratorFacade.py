@@ -10,6 +10,7 @@ class GeneratorFacade:
         self.melody = None
         self.music_player = MusicPlayer()
         self.duration = None
+        self.data_set = None
 
     def is_model_loaded(self):
         if self.neural_network is None:
@@ -24,8 +25,7 @@ class GeneratorFacade:
     def load_model(self, file_path):
         if not file_path:
             return False
-        self.neural_network = RecurrentNeuralNetwork()
-        self.neural_network.load_model(file_path)
+        self.neural_network = RecurrentNeuralNetwork.load_model(file_path)
         return True
 
     def save_model(self, file_path):
@@ -59,6 +59,25 @@ class GeneratorFacade:
     def stop_melody(self):
         self.music_player.stop()
         print('stop melody')
+
+    def load_data_set(self, file_paths):
+        self.data_set = []
+        for file_path in file_paths:
+            self.data_set.append(MidiConverter.convert_midi_file(file_path))
+
+    def reset_data_set(self):
+        self.data_set = None
+
+    def is_data_set_loaded(self):
+        if self.data_set is not None:
+            return True
+        return False
+
+    def train(self, sequence_length, lstm_layer_size, dense_layer_size,
+              dropout_rate, number_of_epochs, test_sample_ratio):
+        self.neural_network = RecurrentNeuralNetwork(self.data_set, sequence_length, lstm_layer_size,
+                                                     dense_layer_size, dropout_rate)
+        self.neural_network.train(number_of_epochs, test_sample_ratio)
 
 
 

@@ -5,14 +5,13 @@ import tkinter as tk
 from tkinter.filedialog import askopenfilename, StringVar, asksaveasfile, IntVar
 from tkinter import ttk
 
+from GUIUtils import GUIUtils
+from ModelCreationWindow import ModelCreationWindow
+
 
 class MainWindow:
     WIDTH = 500
     HEIGHT = 500
-    BACKGROUND_COLOR = '#e0f0da'
-    BUTTON_COLOR = '#4CAF50'
-    HOVER_COLOR = '#3e8e41'
-    ACTIVE_COLOR = '#7db37f'
 
     def __init__(self, generator_facade):
         self.root = tk.Tk()
@@ -23,23 +22,23 @@ class MainWindow:
         self.should_timer_stop = False
         self.generator_facade = generator_facade
         self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, highlightthickness=0,
-                           bg=self.BACKGROUND_COLOR)
-        self.model_buttons_frame = tk.Frame(self.root, bg=self.BACKGROUND_COLOR)
-        self.create_model_button = self.init_button(self.model_buttons_frame, 'create model', None)
-        self.load_model_button = self.init_button(self.model_buttons_frame, 'load model', self.load_model_button_callback)
-        self.save_model_button = self.init_button(self.model_buttons_frame, 'save model', self.save_model_button_callback, 'disabled')
-        self.generation_frame = tk.Frame(self.root, bg=self.BACKGROUND_COLOR)
-        self.generate_button = self.init_button(self.generation_frame, 'generate', self.generate_button_callback, 'disabled')
-        self.melody_saving_frame = tk.Frame(self.root, bg=self.BACKGROUND_COLOR)
-        self.save_melody_button = self.init_button(self.melody_saving_frame, 'save melody', self.save_melody_button_callback, 'disabled')
-        self.melody_player_frame = tk.Frame(self.root, bg=self.BACKGROUND_COLOR)
+                           bg=GUIUtils.BACKGROUND_COLOR)
+        self.model_buttons_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
+        self.create_model_button = GUIUtils.init_button(self.model_buttons_frame, 'create model', self.create_model_button_callback)
+        self.load_model_button = GUIUtils.init_button(self.model_buttons_frame, 'load model', self.load_model_button_callback)
+        self.save_model_button = GUIUtils.init_button(self.model_buttons_frame, 'save model', self.save_model_button_callback, 'disabled')
+        self.generation_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
+        self.generate_button = GUIUtils.init_button(self.generation_frame, 'generate', self.generate_button_callback, 'disabled')
+        self.melody_saving_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
+        self.save_melody_button = GUIUtils.init_button(self.melody_saving_frame, 'save melody', self.save_melody_button_callback, 'disabled')
+        self.melody_player_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
         self.play_icon = tk.PhotoImage(file='./img/play2.png')
         self.stop_icon = tk.PhotoImage(file='./img/stop2.png')
         self.melody_progress_bar = ttk.Progressbar(self.melody_player_frame, orient='horizontal', length=300, mode='determinate')
-        self.player_time_label = tk.Label(self.melody_player_frame, textvariable=self.player_time, bg=self.BACKGROUND_COLOR)
+        self.player_time_label = tk.Label(self.melody_player_frame, textvariable=self.player_time, bg=GUIUtils.BACKGROUND_COLOR)
 
-        self.play_melody_button = self.init_button(self.melody_player_frame, None, self.play_melody_button_callback, 'disabled', 50)
-        self.stop_melody_button = self.init_button(self.melody_player_frame, None, self.stop_melody_button_callback, 'disabled', 50)
+        self.play_melody_button = GUIUtils.init_button(self.melody_player_frame, None, self.play_melody_button_callback, 'disabled', 50)
+        self.stop_melody_button = GUIUtils.init_button(self.melody_player_frame, None, self.stop_melody_button_callback, 'disabled', 50)
 
         self.init_widgets()
 
@@ -67,16 +66,16 @@ class MainWindow:
 
     def init_model_label(self):
         self.model_label_text.set('Current model: ')
-        model_label_frame = tk.Frame(self.root, bg=self.BACKGROUND_COLOR)
+        model_label_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
         model_label_frame.place(relwidth=1, relheight=0.1)
 
-        model_label = tk.Label(model_label_frame, textvariable=self.model_label_text, bg=self.BACKGROUND_COLOR, padx=10)
+        model_label = tk.Label(model_label_frame, textvariable=self.model_label_text, bg=GUIUtils.BACKGROUND_COLOR, padx=10)
         model_label.pack(side='left')
 
     def init_duration_frame(self):
-        duration_frame = tk.Frame(self.root, bg=self.BACKGROUND_COLOR)
+        duration_frame = tk.Frame(self.root, bg=GUIUtils.BACKGROUND_COLOR)
         duration_frame.place(rely=0.3, relwidth=1, relheight=0.1)
-        duration_label = tk.Label(duration_frame, text='duration: ', bg=self.BACKGROUND_COLOR)
+        duration_label = tk.Label(duration_frame, text='duration: ', bg=GUIUtils.BACKGROUND_COLOR)
         duration_label.grid(row=0, column=1, padx=0)
         validate_command = (duration_frame.register(self.validate_spinbox), '%P')
         minute_spinbox = tk.Spinbox(duration_frame, from_=0, to=60, width=5, validate='key',
@@ -109,19 +108,15 @@ class MainWindow:
         self.save_melody_button.pack(side='top', expand=True,  fill='y')
 
     def generate_button_callback(self):
-        self.root.grab_set()
         total_melody_time = self.duration_minutes.get() * 60 + self.duration_seconds.get()
         self.generator_facade.generate_melody(total_melody_time)
         self.melody_progress_bar.configure(max=total_melody_time)
         self.refresh_buttons_after_generating_melody()
-        self.root.grab_release()
 
     def save_melody_button_callback(self):
-        self.root.grab_set()
         file = asksaveasfile(mode='w', defaultextension='.midi')
         if file is not None:
             self.generator_facade.save_melody(file.name)
-        self.root.grab_release()
 
     @staticmethod
     def validate_spinbox(new_value):
@@ -131,34 +126,21 @@ class MainWindow:
                 return True
         return False
 
-    def on_enter(self, e):
-        if e.widget['state'] == 'normal':
-            e.widget['background'] = self.HOVER_COLOR
-
-    def on_leave(self, e):
-        e.widget['background'] = self.BUTTON_COLOR
-
-    def init_button(self, frame, text, command, state='normal', width=16):
-        button = tk.Button(frame, text=text, width=width, activebackground=self.ACTIVE_COLOR, bd=0,
-                           background=self.BUTTON_COLOR, relief='flat', command=command, state=state)
-        button.bind("<Enter>", self.on_enter)
-        button.bind("<Leave>", self.on_leave)
-        return button
+    def create_model_button_callback(self):
+        window = ModelCreationWindow(self.generator_facade, self)
+        window.display_window()
+        window.root.grab_set()
 
     def load_model_button_callback(self):
-        self.root.grab_set()
         file_path = askopenfilename(defaultextension=self.generator_facade.get_model_file_format())
         if self.generator_facade.load_model(file_path):
             self.model_label_text.set('Current model: ' + os.path.basename(file_path))
         self.refresh_buttons_after_updating_model()
-        self.root.grab_release()
 
     def save_model_button_callback(self):
-        self.root.grab_set()
         file = asksaveasfile(mode='w', defaultextension=self.generator_facade.get_model_file_format())
         if file is not None:
             self.generator_facade.save_model(file.name)
-        self.root.grab_release()
 
     def play_melody_button_callback(self):
         self.generator_facade.play_melody()

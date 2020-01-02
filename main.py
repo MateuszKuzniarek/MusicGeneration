@@ -1,12 +1,15 @@
 import pickle
 import time
 from concurrent.futures import thread
+from io import BytesIO
 
-import tensorflow
+import h5py
+import tensorflow as tf
 
 from GeneratorFacade import GeneratorFacade
 from MainWindow import MainWindow
 from MidiConverter import MidiConverter
+from ModelCreationWindow import ModelCreationWindow
 from MusicPlayer import MusicPlayer
 from RecurrentNeuralNetwork import RecurrentNeuralNetwork
 
@@ -64,7 +67,21 @@ from RecurrentNeuralNetwork import RecurrentNeuralNetwork
 #
 # MidiConverter.display_midi_file('output_files/out_test.midi')
 
+# generator_facade = GeneratorFacade()
+#
+# window = ModelCreationWindow(generator_facade)
+# window.display_window()
 
+
+# loaded_object = pickle.load(open('./models/mozart.bin', mode='rb'))
+# model_file_object = BytesIO(loaded_object['binary_data'])
+# data_set = loaded_object['data_set']
+# sequence_length = 20
+# result = RecurrentNeuralNetwork(data_set=data_set, sequence_length=sequence_length)
+# with h5py.File(model_file_object, mode='r') as h5file:
+#     result.model = tf.keras.models.load_model(h5file)
+#
+# result.save_model('./models/new_mozart.bin')
 
 
 generator_facade = GeneratorFacade()

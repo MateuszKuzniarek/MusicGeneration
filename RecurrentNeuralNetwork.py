@@ -19,26 +19,30 @@ class RecurrentNeuralNetwork:
 
     model_file_format = '.bin'
     #normalizer = Normalizer()
-    sequence_length = 20
 
-    def __init__(self):
-        self.data_set = None
+    def __init__(self, data_set, sequence_length=20, lstm_layer_size=256, dense_layer_size=256, dropout_rate=0.3):
+        self.data_set = data_set
+        self.sequence_length = sequence_length
         self.model = tf.keras.models.Sequential()
-        self.model.add(CuDNNLSTM(512, batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
-        self.model.add(Dropout(0.3))
-        self.model.add(CuDNNLSTM(512))
-        self.model.add(Dropout(0.3))
-        self.model.add(Dense(256))
-        self.model.add(Dropout(0.3))
-        self.model.add(Dense(90))
+        self.lstm_layer_size = lstm_layer_size
+        self.dense_layer_size = dense_layer_size
+        self.dropout_rate = dropout_rate
+
+    def prepare_model(self, number_of_unique_output_values):
+        self.model.add(CuDNNLSTM(self.lstm_layer_size, batch_input_shape=(None, self.sequence_length, 1), return_sequences=True))
+        self.model.add(Dropout(self.dropout_rate))
+        self.model.add(CuDNNLSTM(self.lstm_layer_size))
+        self.model.add(Dropout(self.dropout_rate))
+        self.model.add(Dense(self.dense_layer_size))
+        self.model.add(Dropout(self.dropout_rate))
+        self.model.add(Dense(number_of_unique_output_values))
         self.model.add(Activation('softmax'))
         self.model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-    def train(self, data_set):
-        self.data_set = data_set
+    def train(self, number_of_epochs=100, test_size=0.2):
         x = []
         y = []
-        for track in data_set:
+        for track in self.data_set:
             for j in range(0, len(track) - self.sequence_length):
                 input_vector = []
                 for i in range(self.sequence_length):
@@ -46,11 +50,13 @@ class RecurrentNeuralNetwork:
                 x.append(input_vector)
                 y.append(track[j + self.sequence_length])
 
+        #todo: make it a proper dictionary or something
+        self.prepare_model(max(y)+1)
         x = np.reshape(x, (len(x), self.sequence_length, 1))
         y = np_utils.to_categorical(y)
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=4)
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=4)
 
-        history = self.model.fit(x_train, y_train, epochs=200, batch_size=64)
+        history = self.model.fit(x_train, y_train, epochs=number_of_epochs, batch_size=64)
         pyplot.plot(history.history['loss'])
         pyplot.show()
 
@@ -64,20 +70,23 @@ class RecurrentNeuralNetwork:
         return result
 
     def save_model(self, path):
-        with h5py.File('does not matter', driver='core',
-                       backing_store=False, mode='w') as h5file:
+        with h5py.File('does not matter', driver='core', backing_store=False, mode='w') as h5file:
             tf.keras.models.save_model(self.model, h5file)
             h5file.flush()
             binary_data = h5file.id.get_file_image()
-            object_for_save = {"binary_data": binary_data, "data_set": self.data_set}
+            object_for_save = {"binary_data": binary_data, "data_set": self.data_set, "sequence_length": self.sequence_length}
             pickle.dump(object_for_save, open(path, mode='wb'))
 
-    def load_model(self, path):
+    @staticmethod
+    def load_model(path):
         loaded_object = pickle.load(open(path, mode='rb'))
         model_file_object = BytesIO(loaded_object['binary_data'])
+        data_set = loaded_object['data_set']
+        sequence_length = loaded_object['sequence_length']
+        result = RecurrentNeuralNetwork(data_set=data_set, sequence_length=sequence_length)
         with h5py.File(model_file_object, mode='r') as h5file:
-            self.model = tf.keras.models.load_model(h5file)
-        self.data_set = loaded_object['data_set']
+            result.model = tf.keras.models.load_model(h5file)
+        return result
 
     def generate(self, length):
         random_track = self.data_set[randint(0, len(self.data_set) - 1)]
