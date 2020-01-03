@@ -27,7 +27,10 @@ class GeneratorFacade:
     def load_model(self, file_path):
         if not file_path:
             return False
-        self.neural_network = RecurrentNeuralNetwork.load_model(file_path)
+        if file_path.lower().endswith(RecurrentNeuralNetwork.model_file_format):
+            self.neural_network = RecurrentNeuralNetwork.load_model(file_path)
+        else:
+            raise ValueError()
         return True
 
     def save_model(self, file_path):
@@ -65,6 +68,9 @@ class GeneratorFacade:
     def load_data_set(self, file_paths):
         self.data_set = []
         for file_path in file_paths:
+            if not file_path.lower().endswith(('.mid', '.midi')):
+                self.data_set = None
+                raise ValueError()
             self.data_set.append(MidiConverter.convert_midi_file(file_path))
         self.unique_events_list = UniqueEventsList(self.data_set)
         self.unique_events_list.convert_data_set(self.data_set)

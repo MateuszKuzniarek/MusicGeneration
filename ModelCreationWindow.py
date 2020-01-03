@@ -64,32 +64,32 @@ class ModelCreationWindow:
     def init_number_of_epochs_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.3*self.HEIGHT, text='number of epochs: ', anchor='w')
         self.number_of_epochs.set(100)
-        self.epochs_number_entry.place(relx=0.55, rely=0.3)
+        self.epochs_number_entry.place(relx=0.55, rely=0.3, anchor='w')
 
     def init_sequence_length_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.35*self.HEIGHT, text='sequence length: ', anchor='w')
         self.sequence_length.set(20)
-        self.sequence_length_entry.place(relx=0.55, rely=0.35)
+        self.sequence_length_entry.place(relx=0.55, rely=0.35, anchor='w')
 
     def init_test_sample_ratio_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.40*self.HEIGHT, text='test sample ratio: ', anchor='w')
         self.test_sample_ratio.set(0.2)
-        self.test_sample_ratio_entry.place(relx=0.55, rely=0.40)
+        self.test_sample_ratio_entry.place(relx=0.55, rely=0.40, anchor='w')
 
     def init_lstm_layer_size_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.45*self.HEIGHT, text='lstm layer size: ', anchor='w')
         self.lstm_layer_size.set(256)
-        self.lstm_layer_size_entry.place(relx=0.55, rely=0.45)
+        self.lstm_layer_size_entry.place(relx=0.55, rely=0.45, anchor='w')
 
     def init_dense_layer_size_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.50*self.HEIGHT, text='dense layer size: ', anchor='w')
         self.dense_layer_size.set(256)
-        self.dense_layer_size_entry.place(relx=0.55, rely=0.50)
+        self.dense_layer_size_entry.place(relx=0.55, rely=0.50, anchor='w')
 
     def init_dropout_rate_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.55*self.HEIGHT, text='dropout rate: ', anchor='w')
         self.dropout_rate.set(0.3)
-        self.dropout_rate_entry.place(relx=0.55, rely=0.55)
+        self.dropout_rate_entry.place(relx=0.55, rely=0.55, anchor='w')
 
     def init_confirmation_buttons(self):
         self.train_button.place(relx=0.1, rely=0.7, relwidth=0.35, relheight=0.1)
@@ -107,37 +107,47 @@ class ModelCreationWindow:
             messagebox.showerror("Error", "Ivalid parameters values")
 
     def start_training(self):
-        self.disable_window()
-        progressbar_callback = ProgressbarCallback(self.progressbar)
-        self.progressbar.configure(max=self.number_of_epochs.get())
-        self.generator_facade.train(int(self.sequence_length.get()), int(self.lstm_layer_size.get()),
-                                    int(self.dense_layer_size.get()), float(self.dropout_rate.get()),
-                                    int(self.number_of_epochs.get()), float(self.test_sample_ratio.get()),
-                                    [progressbar_callback])
-        self.parent_window.refresh_buttons_after_updating_model()
-        self.parent_window.set_model_label_text('new untitled model')
-        self.root.destroy()
+        try:
+            self.change_window_state('disabled')
+            progressbar_callback = ProgressbarCallback(self.progressbar)
+            self.progressbar.configure(max=self.number_of_epochs.get())
+            self.generator_facade.train(int(self.sequence_length.get()), int(self.lstm_layer_size.get()),
+                                        int(self.dense_layer_size.get()), float(self.dropout_rate.get()),
+                                        int(self.number_of_epochs.get()), float(self.test_sample_ratio.get()),
+                                        [progressbar_callback])
+            self.parent_window.refresh_buttons_after_updating_model()
+            self.parent_window.set_model_label_text('new untitled model')
+            self.root.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+        finally:
+            self.change_window_state('normal')
 
-    def disable_window(self):
-        self.load_data_set_button.configure(state='disabled')
-        self.cancel_button.configure(state='disabled')
-        self.train_button.configure(state='disabled')
-        self.epochs_number_entry.configure(state='disabled')
-        self.sequence_length_entry.configure(state='disabled')
-        self.lstm_layer_size_entry.configure(state='disabled')
-        self.dense_layer_size_entry.configure(state='disabled')
-        self.dropout_rate_entry.configure(state='disabled')
-        self.test_sample_ratio_entry.configure(state='disabled')
+    def change_window_state(self, state):
+        self.load_data_set_button.configure(state=state)
+        self.cancel_button.configure(state=state)
+        self.train_button.configure(state=state)
+        self.epochs_number_entry.configure(state=state)
+        self.sequence_length_entry.configure(state=state)
+        self.lstm_layer_size_entry.configure(state=state)
+        self.dense_layer_size_entry.configure(state=state)
+        self.dropout_rate_entry.configure(state=state)
+        self.test_sample_ratio_entry.configure(state=state)
 
     def cancel_button_callback(self):
         self.generator_facade.reset_data_set()
         self.root.destroy()
 
     def load_data_set_button_callback(self):
-        files = filedialog.askopenfilenames(parent=self.root, title='Choose midi files')
-        files_split_list = self.root.tk.splitlist(files)
-        self.generator_facade.load_data_set(files_split_list)
-        self.number_of_loaded_files_variable.set('Number of loaded files: ' + str(len(files_split_list)))
+        try:
+            files = filedialog.askopenfilenames(parent=self.root, title='Choose midi files')
+            files_split_list = self.root.tk.splitlist(files)
+            self.generator_facade.load_data_set(files_split_list)
+            self.number_of_loaded_files_variable.set('Number of loaded files: ' + str(len(files_split_list)))
+        except ValueError:
+            messagebox.showerror("Error", 'Invalid files')
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def on_label_change(self, varname, index, mode):
         self.canvas.itemconfigure(self.number_of_loaded_files_label, text=self.root.getvar(varname))

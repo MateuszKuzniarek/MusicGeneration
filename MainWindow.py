@@ -3,7 +3,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, StringVar, asksaveasfile, IntVar
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 from GUIUtils import GUIUtils
 from ModelCreationWindow import ModelCreationWindow
@@ -94,15 +94,21 @@ class MainWindow:
         self.canvas.itemconfigure(self.player_time_label, text=self.root.getvar(varname))
 
     def generate_button_callback(self):
-        total_melody_time = self.duration_minutes.get() * 60 + self.duration_seconds.get()
-        self.generator_facade.generate_melody(total_melody_time)
-        self.melody_progress_bar.configure(max=total_melody_time)
-        self.refresh_buttons_after_generating_melody()
+        try:
+            total_melody_time = self.duration_minutes.get() * 60 + self.duration_seconds.get()
+            self.generator_facade.generate_melody(total_melody_time)
+            self.melody_progress_bar.configure(max=total_melody_time)
+            self.refresh_buttons_after_generating_melody()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def save_melody_button_callback(self):
-        file = asksaveasfile(mode='w', defaultextension='.midi')
-        if file is not None:
-            self.generator_facade.save_melody(file.name)
+        try:
+            file = asksaveasfile(mode='w', defaultextension='.midi')
+            if file is not None:
+                self.generator_facade.save_melody(file.name)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     @staticmethod
     def validate_spinbox(new_value):
@@ -117,25 +123,39 @@ class MainWindow:
         window.display_window()
 
     def load_model_button_callback(self):
-        file_path = askopenfilename(defaultextension=self.generator_facade.get_model_file_format())
-        if self.generator_facade.load_model(file_path):
-            self.set_model_label_text(os.path.basename(file_path))
-        self.refresh_buttons_after_updating_model()
+        try:
+            file_path = askopenfilename(defaultextension=self.generator_facade.get_model_file_format())
+            if self.generator_facade.load_model(file_path):
+                self.set_model_label_text(os.path.basename(file_path))
+            self.refresh_buttons_after_updating_model()
+        except ValueError:
+            messagebox.showerror("Error", 'Invalid file')
+        except Exception as e:
+            messagebox.showerror("Error", repr(e))
 
     def save_model_button_callback(self):
-        file = asksaveasfile(mode='w', defaultextension=self.generator_facade.get_model_file_format())
-        if file is not None:
-            self.generator_facade.save_model(file.name)
+        try:
+            file = asksaveasfile(mode='w', defaultextension=self.generator_facade.get_model_file_format())
+            if file is not None:
+                self.generator_facade.save_model(file.name)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def play_melody_button_callback(self):
-        self.generator_facade.play_melody()
-        timer_thread = threading.Thread(target=self.start_timer, args=(self.generator_facade.duration,))
-        timer_thread.start()
+        try:
+            self.generator_facade.play_melody()
+            timer_thread = threading.Thread(target=self.start_timer, args=(self.generator_facade.duration,))
+            timer_thread.start()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def stop_melody_button_callback(self):
-        self.generator_facade.stop_melody()
-        self.reset_timer()
-        self.should_timer_stop = True
+        try:
+            self.generator_facade.stop_melody()
+            self.reset_timer()
+            self.should_timer_stop = True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
     def refresh_buttons_after_updating_model(self):
         if self.generator_facade.is_model_loaded():
