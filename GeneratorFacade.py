@@ -1,6 +1,7 @@
 from MidiConverter import MidiConverter
 from MusicPlayer import MusicPlayer
 from RecurrentNeuralNetwork import RecurrentNeuralNetwork
+from UniqueEventsList import UniqueEventsList
 
 
 class GeneratorFacade:
@@ -11,6 +12,7 @@ class GeneratorFacade:
         self.music_player = MusicPlayer()
         self.duration = None
         self.data_set = None
+        self.unique_events_list = None
 
     def is_model_loaded(self):
         if self.neural_network is None:
@@ -49,10 +51,10 @@ class GeneratorFacade:
     def save_melody(self, file_path):
         if self.melody is None:
             return
-        MidiConverter.write_midi_file(file_path, self.melody)
+        MidiConverter.write_midi_file(file_path, self.melody, self.neural_network.unique_events_list)
 
     def play_melody(self):
-        file_object = MidiConverter.get_midi_file_object(self.melody)
+        file_object = MidiConverter.get_midi_file_object(self.melody, self.neural_network.unique_events_list)
         self.music_player.play(file_object)
         print('play melody')
 
@@ -64,6 +66,8 @@ class GeneratorFacade:
         self.data_set = []
         for file_path in file_paths:
             self.data_set.append(MidiConverter.convert_midi_file(file_path))
+        self.unique_events_list = UniqueEventsList(self.data_set)
+        self.unique_events_list.convert_data_set(self.data_set)
 
     def reset_data_set(self):
         self.data_set = None
@@ -75,8 +79,8 @@ class GeneratorFacade:
 
     def train(self, sequence_length, lstm_layer_size, dense_layer_size,
               dropout_rate, number_of_epochs, test_sample_ratio, callbacks):
-        self.neural_network = RecurrentNeuralNetwork(self.data_set, sequence_length, lstm_layer_size,
-                                                     dense_layer_size, dropout_rate)
+        self.neural_network = RecurrentNeuralNetwork(self.data_set, self.unique_events_list, sequence_length,
+                                                     lstm_layer_size, dense_layer_size, dropout_rate)
         self.neural_network.train(number_of_epochs, test_sample_ratio, callbacks)
 
 

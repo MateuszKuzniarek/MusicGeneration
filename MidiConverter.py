@@ -21,34 +21,39 @@ class MidiConverter:
 
     @staticmethod
     def convert_midi_file(path):
-        notes = []
-
+        events = []
         #todo: multiple tracks problem
         mid = mido.MidiFile(path)
         for track in mid.tracks:
             for msg in track:
                 if not msg.is_meta and msg.type == 'note_on':
-                    notes.append(msg.note)
-
-        return notes
+                    if msg.time == 0 and events:
+                        events[-1].add(msg.note)
+                    else:
+                        events.append({msg.note})
+        return events
 
     @staticmethod
-    def get_midi_file_object(notes):
+    def get_midi_file_object(notes, unique_events_list):
         file_object = BytesIO()
-        mid = MidiConverter.__create_midi_file(notes)
+        mid = MidiConverter.__create_midi_file(notes, unique_events_list)
         mid.save(file=file_object)
         return file_object
 
     @staticmethod
-    def write_midi_file(path, notes):
-        mid = MidiConverter.__create_midi_file(notes)
+    def write_midi_file(path, notes, unique_events_list):
+        mid = MidiConverter.__create_midi_file(notes, unique_events_list)
         mid.save(path)
 
     @staticmethod
-    def __create_midi_file(notes):
+    def __create_midi_file(events, unique_events_list):
         mid = MidiFile()
         track = MidiTrack()
         mid.tracks.append(track)
-        for note in notes:
-            track.append(Message('note_on', note=note, velocity=64, time=MidiConverter.delta_time_in_ticks))
+        for event in events:
+            notes = list(unique_events_list.get_notes(event))
+            track.append(Message('note_on', note=notes[0], velocity=64, time=MidiConverter.delta_time_in_ticks))
+            if len(notes) > 1:
+                for i in range(1, len(notes)):
+                    track.append(Message('note_on', note=notes[i], velocity=64, time=0))
         return mid

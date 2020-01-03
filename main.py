@@ -84,6 +84,13 @@ from RecurrentNeuralNetwork import RecurrentNeuralNetwork
 # result.save_model('./models/new_mozart.bin')
 
 
+#MidiConverter.display_midi_file('./test_files/mozart/1.mid')
+
+# g = GeneratorFacade()
+# g.load_data_set(['./test_files/mozart/1.mid', './test_files/mozart/2.mid'])
+
+
+#76 78
 generator_facade = GeneratorFacade()
 
 window = MainWindow(generator_facade)
