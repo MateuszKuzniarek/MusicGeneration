@@ -46,9 +46,10 @@ class GeneratorFacade:
         if self.neural_network is None:
             return
         self.duration = duration
-        ticks_per_second = (MidiConverter.ticks_per_beat * MidiConverter.beats_per_minute) / 60
+        ticks_per_second = (MidiConverter.ticks_per_beat *
+                            MidiConverter.beats_per_minute) / 60
         number_of_ticks = duration * ticks_per_second
-        number_of_notes = number_of_ticks/MidiConverter.delta_time_in_ticks
+        number_of_notes = number_of_ticks / MidiConverter.delta_time_in_ticks
         self.melody = self.neural_network.generate(int(number_of_notes))
 
     def save_melody(self, file_path):
@@ -83,10 +84,10 @@ class GeneratorFacade:
             return True
         return False
 
-    def train(self, sequence_length, lstm_layer_size, dense_layer_size,
+    def train(self, sequence_length, first_lstm_layer_size, second_lstm_layer_size,
               dropout_rate, number_of_epochs, test_sample_ratio, callbacks):
         self.neural_network = RecurrentNeuralNetwork(self.data_set, self.unique_events_list, sequence_length,
-                                                     lstm_layer_size, dense_layer_size, dropout_rate)
+                                                     first_lstm_layer_size, second_lstm_layer_size, dropout_rate)
         self.neural_network.train(number_of_epochs, test_sample_ratio, callbacks)
 
 

@@ -2,8 +2,8 @@ class UniqueEventsList:
     def __init__(self, data_set):
         music_events = set()
 
-        for track in data_set:
-            for event in track:
+        for file in data_set:
+            for event in file:
                 music_events.add(frozenset(event))
 
         self.events_list = list(music_events)

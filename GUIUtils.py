@@ -34,3 +34,21 @@ class GUIUtils:
         label = canvas.create_text(relx*total_width, rely*total_height, text=stringvar.get(), anchor='w')
         stringvar.trace_variable('w', change_callback)
         return label
+
+    @staticmethod
+    def is_positive_integer(number):
+        if number.isdigit():
+            integer = int(number)
+            if 0 < integer:
+                return True
+        return False
+
+    @staticmethod
+    def is_proper_ratio(number):
+        try:
+            float_number = float(number)
+            if 0 < float_number < 1:
+                return True
+            return False
+        except ValueError:
+            return False

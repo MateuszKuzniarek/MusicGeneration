@@ -15,10 +15,10 @@ class MainWindow:
 
     def __init__(self, generator_facade):
         self.root = tk.Tk()
+        self.root.title('Composer')
         self.root.resizable(False, False)
         self.model_label_text = StringVar()
-        self.duration_minutes = IntVar()
-        self.duration_seconds = IntVar()
+        self.duration_seconds = StringVar()
         self.player_time = StringVar()
         self.should_timer_stop = False
         self.generator_facade = generator_facade
@@ -61,14 +61,21 @@ class MainWindow:
         self.set_model_label_text('')
 
     def init_duration_frame(self):
-        self.canvas.create_text(0.3*self.WIDTH, 0.3*self.HEIGHT, text='duration: ', anchor='w')
-        validate_command = (self.root.register(self.validate_spinbox), '%P')
-        minute_spinbox = tk.Spinbox(self.root, from_=0, to=60, width=5, validate='key',
-                                    validatecommand=validate_command, textvariable=self.duration_minutes)
-        minute_spinbox.place(relx=0.55, rely=0.3, anchor='w')
-        seconds_spinbox = tk.Spinbox(self.root, from_=0, to=60, width=5, validate='key',
-                                     validatecommand=validate_command, textvariable=self.duration_seconds)
-        seconds_spinbox.place(relx=0.7, rely=0.3, anchor='w')
+        self.canvas.create_text(0.1*self.WIDTH, 0.3*self.HEIGHT, text='duration (in seconds): ', anchor='w')
+        seconds_entry = tk.Entry(self.root, textvariable=self.duration_seconds)
+        seconds_entry.place(relx=0.5, rely=0.3, relwidth=0.4, anchor='w')
+
+        # self.test_sample_ratio.set(0.2)
+        # self.test_sample_ratio_entry.place(relx=0.55, rely=0.40, relwidth=0.35, anchor='w')
+        #
+        #
+        # validate_command = (self.root.register(self.validate_spinbox), '%P')
+        # minute_spinbox = tk.Spinbox(self.root, from_=0, to=60, width=5, validate='key',
+        #                             validatecommand=validate_command, textvariable=self.duration_minutes)
+        # minute_spinbox.place(relx=0.55, rely=0.3, anchor='w')
+        # seconds_spinbox = tk.Spinbox(self.root, from_=0, to=60, width=5, validate='key',
+        #                              validatecommand=validate_command, textvariable=self.duration_seconds)
+        # seconds_spinbox.place(relx=0.7, rely=0.3, anchor='w')
 
     def init_melody_player_frame(self):
         self.play_melody_button.place(relx=0.1, rely=0.6, relwidth=0.1, relheight=0.1)
@@ -94,13 +101,16 @@ class MainWindow:
         self.canvas.itemconfigure(self.player_time_label, text=self.root.getvar(varname))
 
     def generate_button_callback(self):
-        try:
-            total_melody_time = self.duration_minutes.get() * 60 + self.duration_seconds.get()
-            self.generator_facade.generate_melody(total_melody_time)
-            self.melody_progress_bar.configure(max=total_melody_time)
-            self.refresh_buttons_after_generating_melody()
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
+        if GUIUtils.is_positive_integer(self.duration_seconds.get()):
+            try:
+                duration = int(self.duration_seconds.get())
+                self.generator_facade.generate_melody(duration)
+                self.melody_progress_bar.configure(max=duration)
+                self.refresh_buttons_after_generating_melody()
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+        else:
+            messagebox.showerror("Error", 'Invalid duration')
 
     def save_melody_button_callback(self):
         try:

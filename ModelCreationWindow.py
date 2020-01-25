@@ -22,8 +22,8 @@ class ModelCreationWindow:
         self.number_of_epochs = tk.StringVar()
         self.sequence_length = tk.StringVar()
         self.test_sample_ratio = tk.StringVar()
-        self.lstm_layer_size = tk.StringVar()
-        self.dense_layer_size = tk.StringVar()
+        self.first_lstm_layer_size = tk.StringVar()
+        self.second_lstm_layer_size = tk.StringVar()
         self.dropout_rate = tk.StringVar()
         self.generator_facade = generator_facade
         self.canvas = tk.Canvas(self.root, height=self.HEIGHT, width=self.WIDTH, highlightthickness=0)
@@ -40,8 +40,8 @@ class ModelCreationWindow:
         self.epochs_number_entry = tk.Entry(self.root, textvariable=self.number_of_epochs)
         self.sequence_length_entry = tk.Entry(self.root, textvariable=self.sequence_length)
         self.test_sample_ratio_entry = tk.Entry(self.root, textvariable=self.test_sample_ratio)
-        self.lstm_layer_size_entry = tk.Entry(self.root, textvariable=self.lstm_layer_size)
-        self.dense_layer_size_entry = tk.Entry(self.root, textvariable=self.dense_layer_size)
+        self.first_lstm_layer_size_entry = tk.Entry(self.root, textvariable=self.first_lstm_layer_size)
+        self.seconds_lstm_layer_size_entry = tk.Entry(self.root, textvariable=self.second_lstm_layer_size)
         self.dropout_rate_entry = tk.Entry(self.root, textvariable=self.dropout_rate)
 
         self.init_widgets()
@@ -51,8 +51,8 @@ class ModelCreationWindow:
         self.init_number_of_epochs_section()
         self.init_sequence_length_section()
         self.init_test_sample_ratio_section()
-        self.init_lstm_layer_size_section()
-        self.init_dense_layer_size_section()
+        self.init_first_lstm_layer_size_section()
+        self.init_second_lstm_layer_size_section()
         self.init_dropout_rate_section()
         self.init_confirmation_buttons()
         self.init_progressbar()
@@ -64,32 +64,32 @@ class ModelCreationWindow:
     def init_number_of_epochs_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.3*self.HEIGHT, text='number of epochs: ', anchor='w')
         self.number_of_epochs.set(100)
-        self.epochs_number_entry.place(relx=0.55, rely=0.3, anchor='w')
+        self.epochs_number_entry.place(relx=0.55, rely=0.3, relwidth=0.35, anchor='w')
 
     def init_sequence_length_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.35*self.HEIGHT, text='sequence length: ', anchor='w')
         self.sequence_length.set(20)
-        self.sequence_length_entry.place(relx=0.55, rely=0.35, anchor='w')
+        self.sequence_length_entry.place(relx=0.55, rely=0.35, relwidth=0.35, anchor='w')
 
     def init_test_sample_ratio_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.40*self.HEIGHT, text='test sample ratio: ', anchor='w')
         self.test_sample_ratio.set(0.2)
-        self.test_sample_ratio_entry.place(relx=0.55, rely=0.40, anchor='w')
+        self.test_sample_ratio_entry.place(relx=0.55, rely=0.40, relwidth=0.35, anchor='w')
 
-    def init_lstm_layer_size_section(self):
-        self.canvas.create_text(0.1*self.WIDTH, 0.45*self.HEIGHT, text='lstm layer size: ', anchor='w')
-        self.lstm_layer_size.set(256)
-        self.lstm_layer_size_entry.place(relx=0.55, rely=0.45, anchor='w')
+    def init_first_lstm_layer_size_section(self):
+        self.canvas.create_text(0.1*self.WIDTH, 0.45*self.HEIGHT, text='first lstm layer size: ', anchor='w')
+        self.first_lstm_layer_size.set(256)
+        self.first_lstm_layer_size_entry.place(relx=0.55, rely=0.45, relwidth=0.35, anchor='w')
 
-    def init_dense_layer_size_section(self):
-        self.canvas.create_text(0.1*self.WIDTH, 0.50*self.HEIGHT, text='dense layer size: ', anchor='w')
-        self.dense_layer_size.set(256)
-        self.dense_layer_size_entry.place(relx=0.55, rely=0.50, anchor='w')
+    def init_second_lstm_layer_size_section(self):
+        self.canvas.create_text(0.1*self.WIDTH, 0.50*self.HEIGHT, text='second lstm layer size: ', anchor='w')
+        self.second_lstm_layer_size.set(256)
+        self.seconds_lstm_layer_size_entry.place(relx=0.55, rely=0.50, relwidth=0.35, anchor='w')
 
     def init_dropout_rate_section(self):
         self.canvas.create_text(0.1*self.WIDTH, 0.55*self.HEIGHT, text='dropout rate: ', anchor='w')
         self.dropout_rate.set(0.3)
-        self.dropout_rate_entry.place(relx=0.55, rely=0.55, anchor='w')
+        self.dropout_rate_entry.place(relx=0.55, rely=0.55, relwidth=0.35, anchor='w')
 
     def init_confirmation_buttons(self):
         self.train_button.place(relx=0.1, rely=0.7, relwidth=0.35, relheight=0.1)
@@ -111,8 +111,8 @@ class ModelCreationWindow:
             self.change_window_state('disabled')
             progressbar_callback = ProgressbarCallback(self.progressbar)
             self.progressbar.configure(max=self.number_of_epochs.get())
-            self.generator_facade.train(int(self.sequence_length.get()), int(self.lstm_layer_size.get()),
-                                        int(self.dense_layer_size.get()), float(self.dropout_rate.get()),
+            self.generator_facade.train(int(self.sequence_length.get()), int(self.first_lstm_layer_size.get()),
+                                        int(self.second_lstm_layer_size.get()), float(self.dropout_rate.get()),
                                         int(self.number_of_epochs.get()), float(self.test_sample_ratio.get()),
                                         [progressbar_callback])
             self.parent_window.refresh_buttons_after_updating_model()
@@ -120,7 +120,6 @@ class ModelCreationWindow:
             self.root.destroy()
         except Exception as e:
             messagebox.showerror("Error", str(e))
-        finally:
             self.change_window_state('normal')
 
     def change_window_state(self, state):
@@ -129,8 +128,8 @@ class ModelCreationWindow:
         self.train_button.configure(state=state)
         self.epochs_number_entry.configure(state=state)
         self.sequence_length_entry.configure(state=state)
-        self.lstm_layer_size_entry.configure(state=state)
-        self.dense_layer_size_entry.configure(state=state)
+        self.first_lstm_layer_size_entry.configure(state=state)
+        self.seconds_lstm_layer_size_entry.configure(state=state)
         self.dropout_rate_entry.configure(state=state)
         self.test_sample_ratio_entry.configure(state=state)
 
@@ -153,33 +152,15 @@ class ModelCreationWindow:
         self.canvas.itemconfigure(self.number_of_loaded_files_label, text=self.root.getvar(varname))
 
     def validate_entries(self):
-        epochs_validity = self.is_positive_integer(self.number_of_epochs.get())
-        sequence_length_validity = self.is_positive_integer(self.sequence_length.get())
-        test_sample_ratio_validity = self.is_proper_ratio(self.test_sample_ratio.get())
-        lstm_layer_size_validity = self.is_positive_integer(self.lstm_layer_size.get())
-        dense_layer_size_validity = self.is_positive_integer(self.dense_layer_size.get())
-        dropout_rate_validity = self.is_proper_ratio(self.dropout_rate.get())
+        epochs_validity = GUIUtils.is_positive_integer(self.number_of_epochs.get())
+        sequence_length_validity = GUIUtils.is_positive_integer(self.sequence_length.get())
+        test_sample_ratio_validity = GUIUtils.is_proper_ratio(self.test_sample_ratio.get())
+        lstm_layer_size_validity = GUIUtils.is_positive_integer(self.first_lstm_layer_size.get())
+        dense_layer_size_validity = GUIUtils.is_positive_integer(self.second_lstm_layer_size.get())
+        dropout_rate_validity = GUIUtils.is_proper_ratio(self.dropout_rate.get())
         data_set_validity = self.generator_facade.is_data_set_loaded()
         return epochs_validity and sequence_length_validity and test_sample_ratio_validity and\
             lstm_layer_size_validity and dense_layer_size_validity and dropout_rate_validity and data_set_validity
-
-    @staticmethod
-    def is_positive_integer(number):
-        if number.isdigit():
-            integer = int(number)
-            if 0 < integer:
-                return True
-        return False
-
-    @staticmethod
-    def is_proper_ratio(number):
-        try:
-            float_number = float(number)
-            if 0 < float_number < 1:
-                return True
-            return False
-        except ValueError:
-            return False
 
     def display_window(self):
         self.root.mainloop()

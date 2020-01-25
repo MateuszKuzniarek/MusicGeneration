@@ -15,6 +15,8 @@ duration = "*"
 pygame = "*"
 pil = "*"
 pillow = "==6.2.2"
+music21 = "==5.7.0"
+tensorflow-gpu = "*"
 
 [requires]
 python_version = "3.6.1"

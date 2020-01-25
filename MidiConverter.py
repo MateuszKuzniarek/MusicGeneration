@@ -8,7 +8,7 @@ class MidiConverter:
 
     ticks_per_beat = 480
     beats_per_minute = 120
-    delta_time_in_ticks = ticks_per_beat
+    delta_time_in_ticks = int(ticks_per_beat/2)
 
     @staticmethod
     def display_midi_file(path):
@@ -22,15 +22,18 @@ class MidiConverter:
     @staticmethod
     def convert_midi_file(path):
         events = []
-        #todo: multiple tracks problem
+        time = 0
         mid = mido.MidiFile(path)
         for track in mid.tracks:
             for msg in track:
                 if not msg.is_meta and msg.type == 'note_on':
-                    if msg.time == 0 and events:
-                        events[-1].add(msg.note)
-                    else:
-                        events.append({msg.note})
+                    time = time + msg.time
+                    if not msg.velocity == 0:
+                        if time == 0 and events:
+                            events[-1].add(msg.note)
+                        else:
+                            events.append({msg.note})
+                        time = 0
         return events
 
     @staticmethod
