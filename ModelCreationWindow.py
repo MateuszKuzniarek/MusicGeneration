@@ -1,8 +1,5 @@
-import os
 import threading
-import time
 import tkinter as tk
-from tkinter.filedialog import askopenfilename, StringVar, asksaveasfile, IntVar
 from tkinter import ttk, filedialog, messagebox
 
 from GUIUtils import GUIUtils

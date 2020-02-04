@@ -30,19 +30,6 @@ class RecurrentNeuralNetwork:
 
     def __init__(self, data_set, unique_events_list, sequence_length=20, first_lstm_layer_size=256,
                  second_lstm_layer_size=256, dropout_rate=0.3):
-        #tf.compat.v1.disable_eager_execution()
-
-        #tf.compat.v1.config.experimental.set_memory_growth
-        #max_memory = 1000  # dedicated memory in MB; run 'dxdiag' to get exact figure
-        #max_usage = 0.95 * max_memory  # example for using up to 95%
-        #config = ConfigProto()
-        #config.gpu_options.allow_growth = True
-        #sess = tf.compact.v1.Session(config=config)
-        #set_session(sess)
-        # gpus = tf.config.experimental.list_physical_devices('GPU')
-        # tf.config.experimental.set_virtual_device_configuration(
-        #     gpus[0],
-        #     [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=max_usage)])
         self.data_set = data_set
         self.unique_events_list = unique_events_list
         self.sequence_length = sequence_length
@@ -58,8 +45,6 @@ class RecurrentNeuralNetwork:
         self.model.add(Dropout(self.dropout_rate))
         self.model.add(CuDNNLSTM(self.second_lstm_layer_size))
         self.model.add(Dropout(self.dropout_rate))
-        #self.model.add(Dense(self.dense_layer_size))
-        #self.model.add(Dropout(self.dropout_rate))
         self.model.add(Dense(number_of_unique_output_values))
         self.model.add(Activation('softmax'))
         self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -129,12 +114,6 @@ class RecurrentNeuralNetwork:
             return result
 
     def generate(self, length):
-        #random_track = self.data_set[randint(0, len(self.data_set) - 1)]
-        #original_fragment_start = randint(0, len(random_track) - self.sequence_length - 1)
-        #notes = random_track[original_fragment_start:original_fragment_start+self.sequence_length]
-        #print(self.unique_events_list.get_event_list_size())
-        #print(random_track[original_fragment_start+self.sequence_length:original_fragment_start+self.sequence_length+length])
-        
         notes = []
         for i in range(0, self.sequence_length):
             notes.append(randint(0, self.unique_events_list.get_event_list_size()))

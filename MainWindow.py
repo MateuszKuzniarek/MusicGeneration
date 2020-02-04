@@ -2,7 +2,7 @@ import os
 import threading
 import time
 import tkinter as tk
-from tkinter.filedialog import askopenfilename, StringVar, asksaveasfile, IntVar
+from tkinter.filedialog import askopenfilename, StringVar, asksaveasfile
 from tkinter import ttk, messagebox
 
 from GUIUtils import GUIUtils
@@ -64,18 +64,6 @@ class MainWindow:
         self.canvas.create_text(0.1*self.WIDTH, 0.3*self.HEIGHT, text='duration (in seconds): ', anchor='w')
         seconds_entry = tk.Entry(self.root, textvariable=self.duration_seconds)
         seconds_entry.place(relx=0.5, rely=0.3, relwidth=0.4, anchor='w')
-
-        # self.test_sample_ratio.set(0.2)
-        # self.test_sample_ratio_entry.place(relx=0.55, rely=0.40, relwidth=0.35, anchor='w')
-        #
-        #
-        # validate_command = (self.root.register(self.validate_spinbox), '%P')
-        # minute_spinbox = tk.Spinbox(self.root, from_=0, to=60, width=5, validate='key',
-        #                             validatecommand=validate_command, textvariable=self.duration_minutes)
-        # minute_spinbox.place(relx=0.55, rely=0.3, anchor='w')
-        # seconds_spinbox = tk.Spinbox(self.root, from_=0, to=60, width=5, validate='key',
-        #                              validatecommand=validate_command, textvariable=self.duration_seconds)
-        # seconds_spinbox.place(relx=0.7, rely=0.3, anchor='w')
 
     def init_melody_player_frame(self):
         self.play_melody_button.place(relx=0.1, rely=0.6, relwidth=0.1, relheight=0.1)
